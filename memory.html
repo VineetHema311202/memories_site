@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Memory Gallery</title>
+  <style>
+    body { margin:0; padding:20px; background:#fff0f5; font-family:'Segoe UI',sans-serif; text-align:center; }
+    h1 { color:#d6336c; }
+    .back { margin-bottom:10px; display:inline-block; color:#555; text-decoration:none; }
+    .gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
+    .item img, .item video { width:100%; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); cursor:pointer; }
+    .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:999; }
+    .overlay.show { display:flex; }
+    .overlay img, .overlay video { max-width:90%; max-height:90%; border-radius:8px; }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back">← Home</a>
+  <h1 id="title">Memories</h1>
+  <div class="gallery" id="gallery">Loading…</div>
+
+  <div class="overlay" id="overlay" onclick="this.classList.remove('show')">
+    <img id="ovImg" style="display:none;">
+    <video id="ovVid" controls style="display:none;"></video>
+  </div>
+
+  <script>
+    const CLOUD_NAME = 'dw3jv4ncs';
+    const params = new URLSearchParams(location.search);
+    const folder = params.get('folder') || '';
+    document.getElementById('title').innerText = folder + ' Memories';
+
+    async function loadGallery() {
+      try {
+        const res = await fetch(`https://res.cloudinary.com/${CLOUD_NAME}/image/list/${encodeURIComponent(folder)}.json`);
+        const json = await res.json();
+        const g = document.getElementById('gallery');
+        g.innerHTML = '';
+        json.resources.forEach(r => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          if (r.resource_type === 'image') {
+            const img = document.createElement('img');
+            img.src = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${r.public_id}.${r.format}`;
+            img.onclick = ()=> show(r.public_id, 'image');
+            div.appendChild(img);
+          } else if (r.resource_type === 'video') {
+            const vid = document.createElement('video');
+            vid.src = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${r.public_id}.${r.format}`;
+            vid.controls = true;
+            vid.onclick = ()=> show(r.public_id, 'video');
+            div.appendChild(vid);
+          }
+          g.appendChild(div);
+        });
+      } catch(err) {
+        document.getElementById('gallery').innerHTML = '<p style="color:red;">Failed to load gallery.</p>';
+        console.error(err);
+      }
+    }
+
+    function show(id, type) {
+      const overlay = document.getElementById('overlay');
+      const img = document.getElementById('ovImg');
+      const vid = document.getElementById('ovVid');
+      if (type==='image') {
+        img.src = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${id}`;
+        img.style.display = 'block';
+        vid.style.display = 'none';
+      } else {
+        vid.src = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${id}`;
+        vid.style.display = 'block';
+        img.style.display = 'none';
+      }
+      overlay.classList.add('show');
+    }
+
+    loadGallery();
+  </script>
+</body>
+</html>

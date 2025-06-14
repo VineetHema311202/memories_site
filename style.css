@@ -1,0 +1,138 @@
+/* === Background with fade-in that stays visible === */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: url("images/main.jpg") no-repeat center center fixed;
+    background-size: cover;
+    color: #333;
+    opacity: 0;
+    animation: fadeInBody 2s ease forwards;
+  }
+  
+  @keyframes fadeInBody {
+    to {
+      opacity: 1;
+    }
+  }
+  
+  /* === Floating Hearts === */
+  .hearts {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+  }
+  
+  .hearts::before, .hearts::after {
+    content: "💗 💕 💖 💘 💝";
+    font-size: 2rem;
+    position: absolute;
+    animation: floatHearts 12s linear infinite;
+    opacity: 0.2;
+  }
+  
+  @keyframes floatHearts {
+    0%   { top: 100%; transform: translateX(0); }
+    100% { top: -100%; transform: translateX(50px); }
+  }
+  
+  /* === Base Styles === */
+  header {
+    text-align: center;
+    padding: 30px;
+    background-color: rgba(255, 228, 225, 0.8);
+    border-radius: 10px;
+    margin: 20px auto;
+    max-width: 600px;
+  }
+  
+  h1 {
+    font-size: 2.5em;
+    color: #d6336c;
+    margin-bottom: 10px;
+    animation: slideDown 1.2s ease-out;
+  }
+  
+  p {
+    font-size: 1.2em;
+    color: #555;
+  }
+  
+  /* === Home Page Boxes === */
+  .section-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto 40px auto;
+  }
+  
+  .box {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    text-align: center;
+    overflow: hidden;
+    transition: transform 0.3s;
+    text-decoration: none;
+    color: inherit;
+    opacity: 0;
+    transform: scale(0.95);
+    animation: zoomIn 0.6s forwards;
+  }
+  
+  .box:nth-child(1) { animation-delay: 0.2s; }
+  .box:nth-child(2) { animation-delay: 0.4s; }
+  .box:nth-child(3) { animation-delay: 0.6s; }
+  .box:nth-child(4) { animation-delay: 0.8s; }
+  .box:nth-child(5) { animation-delay: 1s; }
+  
+  .box img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .box h2 {
+    padding: 10px 0;
+    background-color: #fdf2f8;
+    margin: 0;
+    font-size: 1.3em;
+    color: #a61e4d;
+  }
+  
+  .box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(214, 51, 108, 0.2);
+  }
+  
+  /* === Audio Message Box === */
+  .audio-box {
+    padding: 20px;
+    background-color: rgba(255, 228, 225, 0.8);
+    max-width: 600px;
+    margin: 0 auto 40px auto;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  }
+  
+  .audio-box audio {
+    margin-top: 10px;
+    width: 90%;
+  }
+  
+  /* === Animations === */
+  @keyframes slideDown {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes zoomIn {
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
