@@ -2,66 +2,109 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Memory Gallery</title>
   <style>
     body {
-      margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #fdf6f9;
+      background: #fff0f5;
+      margin: 0;
+      padding: 20px;
       text-align: center;
     }
+
     h1 {
       color: #d6336c;
-      margin: 20px 0;
+      margin-bottom: 10px;
     }
+
     .gallery {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 15px;
-      padding: 20px;
+      gap: 20px;
+      margin-top: 30px;
     }
-    .gallery img, .gallery video {
-      max-width: 300px;
-      border-radius: 10px;
+
+    .gallery-item {
+      width: 280px;
+      height: 200px;
+      border-radius: 12px;
+      overflow: hidden;
       box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+      background: #fff;
+      transition: transform 0.3s;
+    }
+
+    .gallery-item:hover {
+      transform: scale(1.05);
+    }
+
+    .gallery-item img, .gallery-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #a61e4d;
+      text-decoration: none;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1 id="memoryTitle">Memories</h1>
+  <h1 id="memory-title">Loading...</h1>
   <div class="gallery" id="gallery"></div>
+  <a href="index.html" class="back-link">← Back to Memories</a>
 
   <script>
-    const title = new URLSearchParams(window.location.search).get('title');
-    const folderId = new URLSearchParams(window.location.search).get('folderId');
+    const title = new URLSearchParams(window.location.search).get("title") || "Memories";
+    document.getElementById("memory-title").textContent = title;
 
-    document.getElementById('memoryTitle').innerText = title || 'Memories';
+    const publicKey = "618cf797fcfca50d3a4a"; // Your Uploadcare public key
+    const tag = title.replace(/\s+/g, '-'); // e.g., "Special Moments" → "Special-Moments"
+    const gallery = document.getElementById("gallery");
 
-    const cloudName = "dw3jv4ncs";
-    const folderPath = `memory/${title.replace(/\s+/g, '%20')}`;
+    async function fetchImagesByTag(tag) {
+      try {
+        const response = await fetch(`https://api.uploadcare.com/files/?ordering=-datetime_uploaded&limit=100&tags=${tag}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/vnd.uploadcare-v0.7+json",
+            "Authorization": `Uploadcare.Simple ${publicKey}:`
+          }
+        });
 
-    async function fetchImages() {
-      const response = await fetch(`https://res.cloudinary.com/${cloudName}/image/list/${folderPath}.json`);
-      const data = await response.json();
-      const gallery = document.getElementById('gallery');
+        const data = await response.json();
+        const files = data.results;
 
-      data.resources.forEach(item => {
-        const ext = item.public_id.split('.').pop().toLowerCase();
-        const isVideo = item.format === 'mp4';
+        if (!files.length) {
+          gallery.innerHTML = `<p>No images found for "${title}".</p>`;
+          return;
+        }
 
-        const element = document.createElement(isVideo ? 'video' : 'img');
-        element.src = `https://res.cloudinary.com/${cloudName}/${isVideo ? 'video' : 'image'}/upload/${item.public_id}.${item.format}`;
-        if (isVideo) element.controls = true;
-        gallery.appendChild(element);
-      });
+        files.forEach(file => {
+          const item = document.createElement("div");
+          item.className = "gallery-item";
+
+          if (file.mime_type.startsWith("image")) {
+            item.innerHTML = `<img src="https://ucarecdn.com/${file.uuid}/-/preview/"/>`;
+          } else if (file.mime_type.startsWith("video")) {
+            item.innerHTML = `<video controls src="https://ucarecdn.com/${file.uuid}/" type="${file.mime_type}"></video>`;
+          }
+
+          gallery.appendChild(item);
+        });
+
+      } catch (error) {
+        gallery.innerHTML = `<p>Error loading images: ${error.message}</p>`;
+      }
     }
 
-    fetchImages().catch(err => {
-      document.getElementById('gallery').innerText = 'Failed to load memories.';
-      console.error('Cloudinary fetch error:', err);
-    });
+    fetchImagesByTag(tag);
   </script>
 </body>
 </html>
